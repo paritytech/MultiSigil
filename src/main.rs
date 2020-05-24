@@ -13,18 +13,28 @@
 // Copyright (C) 2020 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
-use clap::{clap_app, crate_authors, crate_description, value_t_or_exit, values_t_or_exit};
+use clap::{clap_app, crate_authors, crate_description};
 use codec::{Decode as _, Encode as _};
-use sp_core::crypto::{PublicError, Ss58Codec};
+use sp_core::crypto::Ss58Codec;
 use sp_io::hashing::blake2_256;
 use sp_runtime::AccountId32 as AccountId;
+
+struct AddressParsingError;
+
+impl std::fmt::Display for AddressParsingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("AddressPasringError")
+    }
+}
 
 struct Address(AccountId);
 
 impl std::str::FromStr for Address {
-    type Err = PublicError;
+    type Err = AddressParsingError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        <AccountId as Ss58Codec>::from_string(s).map(Self)
+        <AccountId as Ss58Codec>::from_string(s)
+            .map_err(|_| AddressParsingError {})
+            .map(Self)
     }
 }
 
@@ -37,10 +47,14 @@ fn main() {
         (@arg ADDRESSES: +required ... "The addresses to use")
     )
     .get_matches();
-    let threshold = value_t_or_exit!(matches, "THRESHOLD", u16);
-    let mut who: Vec<_> = values_t_or_exit!(matches, "ADDRESSES", Address)
+    let threshold: u16 = matches
+        .value_of_t("THRESHOLD")
+        .expect("THRESHOLD is a required argument");
+    let mut who: Vec<AccountId> = matches
+        .values_of_t::<Address>("ADDRESSES")
+        .expect("ADDRESSES are required arguments")
         .into_iter()
-        .map(|e| e.0)
+        .map(|e: Address| e.0)
         .collect();
     who.sort_unstable();
     let entropy = (b"modlpy/utilisuba", who, threshold).using_encoded(blake2_256);
