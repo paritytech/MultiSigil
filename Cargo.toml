@@ -5,7 +5,7 @@ authors = ["Parity Technologies <admin@parity.io>"]
 edition = "2018"
 repository = "https://github.com/paritytech/substrate-multisig-cli.git"
 homepage = "https://substrate.dev"
-license = "GPL-3.0-or-later"
+license = "Apache-2.0"
 description = "CLI for generating Substrate multisig addresses"
 
 [dependencies]
