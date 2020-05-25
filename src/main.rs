@@ -13,11 +13,19 @@
 // Copyright (C) 2020 Parity Technologies (UK) Ltd.
 // SPDX-License-Identifier: Apache-2.0
 
-use clap::{clap_app, crate_authors, crate_description, value_t_or_exit, values_t_or_exit};
+use clap::{clap_app, crate_authors, crate_description};
 use codec::{Decode as _, Encode as _};
-use sp_core::crypto::{PublicError, Ss58AddressFormat, Ss58Codec};
+use sp_core::crypto::{Ss58AddressFormat, Ss58Codec};
 use sp_io::hashing::blake2_256;
 use sp_runtime::AccountId32 as AccountId;
+
+struct NetworkPasringError;
+
+impl std::fmt::Display for NetworkPasringError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("NetworkParsingError")
+    }
+}
 
 #[derive(Debug)]
 enum Network {
@@ -26,13 +34,13 @@ enum Network {
 }
 
 impl std::str::FromStr for Network {
-    type Err = ();
+    type Err = NetworkPasringError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "polkadot" => Ok(Network::Polkadot),
             "kusama" => Ok(Network::Kusama),
-            _ => Err(()),
+            _ => Err(NetworkPasringError),
         }
     }
 }
@@ -46,15 +54,24 @@ impl Network {
     }
 }
 
+struct AddressParsingError;
+
+impl std::fmt::Display for AddressParsingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("AddressPasringError")
+    }
+}
+
 struct Address {
     account: AccountId,
     format: Ss58AddressFormat,
 }
 
 impl std::str::FromStr for Address {
-    type Err = PublicError;
+    type Err = AddressParsingError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         <AccountId as Ss58Codec>::from_string_with_version(s)
+            .map_err(|_| AddressParsingError{})
             .map(|(account, format)| Self { account, format })
     }
 }
@@ -70,9 +87,15 @@ fn main() {
     )
     .get_matches();
 
-    let network = value_t_or_exit!(matches, "NETWORK", Network);
-    let threshold = value_t_or_exit!(matches, "THRESHOLD", u16);
-    let mut who: Vec<_> = values_t_or_exit!(matches, "ADDRESSES", Address)
+    let network: Network = matches
+        .value_of_t("NETWORK")
+        .expect("NETWORK has a default value");
+    let threshold: u16 = matches
+        .value_of_t("THRESHOLD")
+        .expect("THRESHOLD is a required argument");
+    let mut who: Vec<AccountId> = matches
+        .values_of_t::<Address>("ADDRESSES")
+        .expect("ADDRESSES are required arguments")
         .into_iter()
         .map(|address| {
             if address.format == network.format() {
