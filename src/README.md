@@ -1,7 +1,7 @@
 # MultiSigil — Substrate multisig address calculator for your CLI
 
 It is basically what it says on the tin.
-Since Substrate multigis addresses are [deterministic](https://github.com/paritytech/substrate/blob/bda3b4092681cc1ab95be4de71fe3a313721852a/frame/utility/src/lib.rs#L318-L343), MultiSigil doesn't need to do any network connections — and can be used even _before_ the chain has been started.
+Since Substrate multisig addresses are [deterministic](https://github.com/paritytech/substrate/blob/bda3b4092681cc1ab95be4de71fe3a313721852a/frame/utility/src/lib.rs#L318-L343), MultiSigil doesn't need to do any network connections — and can be used even _before_ the chain has been started.
 
 ## Usage
 
