@@ -700,6 +700,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "multi-sigil"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "nodrop"
 version = "0.1.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1478,17 +1489,6 @@ dependencies = [
  "pbkdf2",
  "schnorrkel",
  "sha2",
-]
-
-[[package]]
-name = "substrate-multisig-cli"
-version = "0.1.0"
-dependencies = [
- "clap",
- "parity-scale-codec",
- "sp-core",
- "sp-io",
- "sp-runtime",
 ]
 
 [[package]]
